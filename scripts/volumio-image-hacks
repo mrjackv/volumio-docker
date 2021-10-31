@@ -23,11 +23,11 @@ echo 'volumio ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/volumio
 echo 'Defaults !syslog, !pam_session' >> /etc/sudoers
 
 case $(dpkg --print-architecture) in
-	i386 | i586 | i686 | x86_64)
+	i386 | i586 | i686 | amd64)
 		HW=x86
 		ARCH=i386
 	;;
-	armhf|arm64)
+	armhf | arm64)
 		HW=pi
 		ARCH=arm
 	;;

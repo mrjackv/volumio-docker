@@ -2,7 +2,7 @@
 set -euo pipefail
 
 case $(dpkg --print-architecture) in
-	x86_64)
+	amd64)
 		PLAT=x64
 	;;
 	i386 | i586 | i686)
