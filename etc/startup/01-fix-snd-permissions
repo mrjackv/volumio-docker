@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+# ensure audio group has the right group id (same as /dev/snd/ owner)
+
+[ -e /dev/snd/seq ] || return 0
+
+dev_gid=$(stat --format='%g' /dev/snd/seq)
+audio_gid=$(getent group audio | cut -d: -f3)
+
+if [ "$dev_gid" != "$audio_gid" ]; then
+	echo "adjusting audio group gid"
+	groupmod -o -g $dev_gid audio
+fi

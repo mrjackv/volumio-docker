@@ -1,0 +1,70 @@
+--- a/credits.js	2021-10-30 20:38:17.316266897 +0200
++++ b/credits.js	2021-10-30 20:40:51.474154562 +0200
+@@ -1,7 +1,6 @@
+ #!/usr/local/bin/node
+ var fs = require('fs');
+ var request = require("request");
+-var npm = require("npm");
+ var fs=require('fs-extra');
+ var theme = process.argv.slice(2)[0];
+ var variant = process.argv.slice(2)[1];
+@@ -38,13 +37,6 @@
+ 
+ var finishCount=0;
+ var finalCount = array.length*2;
+-npm.load(function (er) {
+-	for (itemN in array) {
+-		var item = array[itemN];
+-		readPackages(item);
+-		readAuthors(item);
+-	}
+-});
+ 
+ function readPackages(item) {
+ 	request({
+@@ -71,44 +63,7 @@
+ }
+ 
+ function fetchRepos(dep) {
+-	npm.commands.view([dep], true, function (er, data) {
+-    if (er) {
+-    	log("ERR: " + er);
+-    } else {
+-    	var k = Object.keys(data)[0];
+-    	var pkg = data[k];
+-    	try {
+-
+-	    var vanilla = {repo: "#", author: "N/A", license: "N/A"};
+-
+-	    if (Object.prototype.hasOwnProperty.call(pkg,"repository")) {
+-	    	if (Object.prototype.hasOwnProperty.call(pkg.repository,'url') ) {
+-	    		vanilla.repo = pkg.repository.url;
+-	    	} else {
+-	    		vanilla.repo = pkg.repository;
+-	    	}
+-	    }
+-
+-	    if (Object.prototype.hasOwnProperty.call(pkg,"author") ) {
+-	    	if (Object.prototype.hasOwnProperty.call(pkg.author,"name")  ) {
+-	    		vanilla.author = pkg.author.name;
+-	    	} else {
+-	    		vanilla.author = pkg.author;
+-	    	}
+-	    }
+-
+-	    	vanilla.license = pkg.license;
+-
+-		repos[dep] = vanilla;
+-	} catch (e) {
+-		var k = Object.keys(data)[0];
+-    	var pkg = data[k];
+-		log("Error fetching " + dep + " " + k + " : "+ e + " - " + Object.keys(pkg));
+-	}
+-
+-	}
+-	finished();
+-  });
++    finished();
+ }
+ 
+ 

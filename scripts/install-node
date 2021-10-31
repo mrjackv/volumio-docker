@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+
+case $(dpkg --print-architecture) in
+	x86_64)
+		PLAT=x64
+	;;
+	i386 | i586 | i686)
+		PLAT=x86
+	;;
+	armhf)
+		PLAT=armv7l
+	;;
+	arm64)
+		PLAT=arm64
+	;;
+	*)
+		echo "Platform unsupported: $(dpkg --print-architecture), bailing"
+	;;
+esac
+
+
+curl -Lo /tmp/nodejs.tar.xz "https://nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-${PLAT}.tar.xz"
+#sha256sum /tmp/nodejs.tar.xz
+#echo "$NODE_SHA256 /tmp/nodejs.tar.xz" | sha256sum --check --status
+mkdir -p /opt/node
+tar --strip-components 1 -C /opt/node -xf /tmp/nodejs.tar.xz
+rm -f /tmp/nodejs.tar.xz

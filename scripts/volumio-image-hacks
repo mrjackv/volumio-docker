@@ -1,0 +1,61 @@
+#!/bin/sh
+set -eu
+
+# Fake a few commands that we don't provide in the Docker image.
+cat << 'EOF' > /bin/fake-cmd
+#!/bin/sh
+set -eu
+echo "fake-cmd: $0 $@" > /proc/1/fd/2
+EOF
+chmod +x /bin/fake-cmd
+ln -sf /bin/fake-cmd /bin/systemctl
+ln -sf /bin/fake-cmd /usr/bin/killall
+ln -sf /bin/fake-cmd /usr/sbin/i2cdetect
+ln -sf /bin/fake-cmd /sbin/iwlist
+ln -sf /bin/fake-cmd /sbin/iw
+
+# Fake Samba config.
+mkdir -p /etc/samba
+touch /etc/samba/smb.conf
+
+# Configure sudo.
+echo 'volumio ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/volumio
+echo 'Defaults !syslog, !pam_session' >> /etc/sudoers
+
+case $(dpkg --print-architecture) in
+	i386 | i586 | i686 | x86_64)
+		HW=x86
+		ARCH=i386
+	;;
+	armhf|arm64)
+		HW=pi
+		ARCH=arm
+	;;
+	*)
+		"Unknown arch: $(dpkg --print-architecture), bailing"
+	;;
+esac
+
+# Append Volumio release information.
+cat << EOF >> /etc/os-release
+VOLUMIO_VERSION=latest
+VOLUMIO_BUILD_DATE=$(date)
+VOLUMIO_VARIANT=volumio
+VOLUMIO_HARDWARE=${HW}
+VOLUMIO_ARCH=${ARCH}
+EOF
+
+# Install Volumio cli.
+install -m 755 /volumio/app/plugins/system_controller/volumio_command_line_client/volumio.sh /usr/local/bin/volumio
+
+# Disable configuration wizard (most configuration options are not valid in a Docker container context).
+jq '.show_wizard.value=false' /volumio/app/plugins/system_controller/system/config.json > /tmp/config.json
+mv /tmp/config.json /volumio/app/plugins/system_controller/system/config.json
+
+# Force i386 arch (no amd64 plugins).
+sed -i "s/arch = archraw\..*/arch = 'i386';/" /volumio/app/pluginmanager.js
+
+# Switch tracking to opt-in.
+# See https://github.com/volumio/Volumio2-UI/issues/310.
+sed -i "s/self.config.get('allow_ui_statistics', true)/self.config.get('allow_ui_statistics', false)/" /volumio/app/plugins/system_controller/system/index.js
+

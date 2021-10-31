@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+# Volumio internal storage.
+mkdir -p /data/INTERNAL
+
+# Create dbus folder.
+mkdir -p /var/run/dbus

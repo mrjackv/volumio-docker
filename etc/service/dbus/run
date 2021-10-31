@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+if [ -f /run/dbus/pid ]; then
+	pid="$(cat /run/dbus/pid 2>/dev/null || true)"
+	if [ -n "$pid" ]; then
+		kill -9 "$pid" 2>/dev/null || true
+	fi
+	rm -f /run/dbus/pid
+fi
+
+exec dbus-daemon --nofork --config-file /usr/share/dbus-1/system.conf

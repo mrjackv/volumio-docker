@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+# workaround for the execution mode detection.
+# basically it does a request to IP_SERVE:80/host and if 200, resolves the local ip and use it for next requests.
+# so we cannot be in PROD mode if not on port 80, and the IP resolution is not good anyway inside a Docker...
+# cf https://github.com/volumio/Volumio2-UI/blob/3721c9866773a82bfbd5e1fb47cb8ac0962409af/src/app/index.route.js:32
+echo '{"localhost": "'$HOST'"}' > /volumio/http/www/app/local-config.json
+
+# prepare data directory
+mkdir -p /data
+chown volumio:volumio /data
+
+# prepare log files
+touch /var/log/volumio.log /var/log/albumart.log
+chown volumio:volumio /var/log/volumio.log /var/log/albumart.log
+
+# wait for mpd service to be ready
+while [ ! -S /run/mpd/socket ]; do
+	echo "Waiting for MPD"
+	sleep 1
+done
+echo "MPD is ready, starting Volumio"
+
+exec tini -sg gosu volumio node /volumio/index.js

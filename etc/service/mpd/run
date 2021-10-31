@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+HOST_USER="${HOST_USER:-$(id -u mpd):$(id -g mpd)}"
+AUDIO_OUTPUT="${AUDIO_OUTPUT:-alsa}"
+
+# prepare folders
+mkdir -p /var/run/mpd/ /var/lib/mpd /data/mpd
+chown $HOST_USER /var/run/mpd/ /var/lib/mpd/ /data/mpd/
+
+
+# set audio output in mpd configuration
+sed -i "s/%%AUDIO_OUTPUT%%/$AUDIO_OUTPUT/" /etc/mpd.conf
+
+exec gosu $HOST_USER mpd --stderr --verbose --no-daemon /etc/mpd.conf
