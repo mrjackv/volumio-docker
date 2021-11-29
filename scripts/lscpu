@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+
+/usr/bin/lscpu | sed 's;x86_64;i686;g'

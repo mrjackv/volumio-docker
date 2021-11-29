@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+
+/usr/bin/dpkg $@ | sed 's;amd64;i386;g'

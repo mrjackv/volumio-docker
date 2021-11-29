@@ -106,5 +106,7 @@ COPY etc /etc
 COPY scripts/volumio-image-hacks /tmp/
 RUN /tmp/volumio-image-hacks
 
-ADD scripts/entrypoint /entrypoint
+COPY scripts/entrypoint /entrypoint
+COPY scripts/lscpu scripts/dpkg /usr/local/bin
+
 ENTRYPOINT /entrypoint
