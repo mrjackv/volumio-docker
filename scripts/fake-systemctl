@@ -8,10 +8,10 @@ handle-unit() {
                 gosu volumio bash -c """
                     export LD_LIBRARY_PATH=/usr/local/lib;
                     /usr/local/bin/spopd -f -c /etc/spopd.conf
-                """
+                """ &
             ;;
             volspotconnect2.service)
-                gosu volumio /usr/bin/vollibrespot /data/plugins/music_service/volspotconnect2/volspotify.toml
+                gosu volumio /usr/bin/vollibrespot /data/plugins/music_service/volspotconnect2/volspotify.toml &
             ;;
         esac
     else
