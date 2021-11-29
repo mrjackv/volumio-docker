@@ -8,8 +8,9 @@ set -eu
 echo "fake-cmd: $0 $@" > /proc/1/fd/2
 EOF
 chmod +x /bin/fake-cmd
-ln -sf /bin/fake-cmd /bin/systemctl
+cp /usr/bin/killall /bin
 ln -sf /bin/fake-cmd /usr/bin/killall
+ln -sf /bin/fake-cmd /usr/bin/apt-get
 ln -sf /bin/fake-cmd /usr/sbin/i2cdetect
 ln -sf /bin/fake-cmd /sbin/iwlist
 ln -sf /bin/fake-cmd /sbin/iw
@@ -53,7 +54,7 @@ jq '.show_wizard.value=false' /volumio/app/plugins/system_controller/system/conf
 mv /tmp/config.json /volumio/app/plugins/system_controller/system/config.json
 
 # Force i386 arch (no amd64 plugins).
-sed -i "s/arch = archraw\..*/arch = 'i386';/" /volumio/app/pluginmanager.js
+sed -i "s/arch = archraw\..*/arch = '${ARCH}';/" /volumio/app/pluginmanager.js
 
 # Switch tracking to opt-in.
 # See https://github.com/volumio/Volumio2-UI/issues/310.

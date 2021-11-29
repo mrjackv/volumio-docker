@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+
+handle-unit() {
+    if [ $1 == 'start' ]; then
+        case $2 in
+            spop.service)
+                gosu volumio bash -c """
+                    export LD_LIBRARY_PATH=/usr/local/lib;
+                    /usr/local/bin/spopd -f -c /etc/spopd.conf
+                """
+            ;;
+            volspotconnect2.service)
+                gosu volumio /usr/bin/vollibrespot /data/plugins/music_service/volspotconnect2/volspotify.toml
+            ;;
+        esac
+    else
+        case $2 in
+            spop.service)
+                /bin/killall spopd
+            ;;
+            volspotconnect2.service)
+                /bin/killall vollibrespot
+            ;;
+        esac
+    fi
+}
+
+
+if [ $1 == 'start' ] || [ $1 == 'stop' ]; then
+    if [ $2 == 'volspotconnect2.service' ] || [ $2 == 'spop.service' ]; then
+        handle-unit $1 $2
+    else
+        echo "fake-systemctl: $0 $@" > /proc/1/fd/2
+    fi
+else
+    echo "fake-systemctl: $0 $@" > /proc/1/fd/2
+fi

@@ -3,8 +3,11 @@ FROM docker.io/library/debian:bullseye as base
 ADD scripts/cleanup /usr/bin
 
 RUN apt update && \
-    apt install -y --no-install-recommends curl ca-certificates xz-utils && \
+    apt install -y --no-install-recommends curl gnupg ca-certificates xz-utils && \
+    curl http://apt.mopidy.com/mopidy.gpg | apt-key add - && \
     cleanup
+
+ADD https://apt.mopidy.com/buster.list /etc/apt/sources.list.d/mopidy.list
 
 ENV NODE_VERSION="8.17.0"
 
@@ -22,7 +25,10 @@ RUN apt update && \
     apt install -y --no-install-recommends \
                 build-essential \
                 libavahi-compat-libdnssd-dev \
-                libudev-dev python git
+                libudev-dev python git cmake \
+                libjson-glib-dev libao-dev libdbus-glib-1-dev \
+                libnotify-dev libsoup2.4-dev libsox-dev libspotify-dev
+
 
 
 # Build Volumio Core.
@@ -74,15 +80,31 @@ RUN cd /tmp/volumio-ui/src/app/themes/volumio/scripts && \
 
 
 
+# Build spop from source
+FROM builder as spop-builder
+
+WORKDIR /
+
+RUN git clone https://github.com/Schnouki/spop && \
+    mkdir spop/build && cd spop/build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. && \
+    make all
+
+
+
 # Build final image.
 FROM base as final
+
+ENV VOLLIBRESPOT_VER=0.2.4
 
 RUN apt update && \
     apt install -y --no-install-recommends \
                 alsa-utils avahi-daemon avahi-utils \
                 libavahi-compat-libdnssd1 libnss-mdns \
                 minizip mpc mpd pulseaudio shairport-sync \
-                sudo wget s6 gosu jq tini \
+                sudo wget s6 gosu jq tini systemd psmisc \
+                libjson-glib-1.0-0 libao4 libdbus-glib-1-2 libnotify4 \
+                libsoup2.4-1 libsox3 libsox-fmt-all libspotify12 \
     && cleanup
 
 # Add specific user and group (hardcoded).
@@ -93,6 +115,16 @@ RUN groupadd -g 1000 volumio && useradd -u 1000 -g 1000 volumio && \
 # Install dist from previous stages.
 COPY --from=core-builder /dist/volumio /volumio
 COPY --from=ui-builder /dist/volumio /volumio/http/www
+
+# Grab spop
+COPY --from=spop-builder /spop/build/spopd /usr/local/bin
+COPY --from=spop-builder /spop/build/libspop*.so /usr/local/lib
+
+# Install Vollibrespot
+RUN ARCH="$(lscpu -J | jq -r '.lscpu[0].data')" && \
+    curl -Lo /tmp/vol.tar.xz "https://github.com/ashthespy/Vollibrespot/releases/download/v${VOLLIBRESPOT_VER}/vollibrespot-${ARCH}.tar.xz" && \
+    tar xf /tmp/vol.tar.xz -C/usr/bin && rm /tmp/vol.tar.xz
+
 
 # Symlink library to /mnt for volumio.
 RUN rm -rf /mnt && ln -s /var/lib/mpd/music /mnt && \
@@ -108,5 +140,6 @@ RUN /tmp/volumio-image-hacks
 
 COPY scripts/entrypoint /entrypoint
 COPY scripts/lscpu scripts/dpkg /usr/local/bin
+COPY scripts/fake-systemctl /bin/systemctl
 
 ENTRYPOINT /entrypoint
