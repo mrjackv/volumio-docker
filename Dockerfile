@@ -141,5 +141,6 @@ RUN /tmp/volumio-image-hacks
 COPY scripts/entrypoint /entrypoint
 COPY scripts/lscpu scripts/dpkg /usr/local/bin
 COPY scripts/fake-systemctl /bin/systemctl
+COPY scripts/killall /usr/bin/killall
 
 ENTRYPOINT /entrypoint

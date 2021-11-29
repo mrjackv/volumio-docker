@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+
+if [ $1 == 'spopd' ]; then
+    /bin/killall spop
+else
+    echo "fake-cmd: $0 $@" > /proc/1/fd/2
+fi

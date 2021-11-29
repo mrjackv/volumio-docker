@@ -9,7 +9,6 @@ echo "fake-cmd: $0 $@" > /proc/1/fd/2
 EOF
 chmod +x /bin/fake-cmd
 cp /usr/bin/killall /bin
-ln -sf /bin/fake-cmd /usr/bin/killall
 ln -sf /bin/fake-cmd /usr/bin/apt-get
 ln -sf /bin/fake-cmd /usr/sbin/i2cdetect
 ln -sf /bin/fake-cmd /sbin/iwlist
