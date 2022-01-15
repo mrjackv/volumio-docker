@@ -48,6 +48,7 @@ RUN curl -Lo /tmp/volumio.tar.gz "https://github.com/volumio/Volumio2/archive/$C
 RUN sed -i '/"fs-extra"/d' /dist/volumio/package.json
 
 RUN cd /dist/volumio && \
+    npm install --save --production busboy@0.3.1 && \
     npm install --production && \
     node /dist/volumio/utils/misc/clean-node-modules.js /dist/volumio
 
