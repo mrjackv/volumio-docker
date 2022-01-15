@@ -118,7 +118,7 @@ COPY --from=ui-builder /dist/volumio /volumio/http/www
 
 # Grab spop
 COPY --from=spop-builder /spop/build/spopd /usr/local/bin
-COPY --from=spop-builder /spop/build/libspop*.so /usr/local/lib
+COPY --from=spop-builder /spop/build/libspop*.so /usr/local/lib/
 
 # Install Vollibrespot
 RUN ARCH="$(lscpu -J | jq -r '.lscpu[0].data')" && \
@@ -139,7 +139,7 @@ COPY scripts/volumio-image-hacks /tmp/
 RUN /tmp/volumio-image-hacks
 
 COPY scripts/entrypoint /entrypoint
-COPY scripts/lscpu scripts/dpkg /usr/local/bin
+COPY scripts/lscpu scripts/dpkg /usr/local/bin/
 COPY scripts/fake-systemctl /bin/systemctl
 COPY scripts/killall /usr/bin/killall
 
